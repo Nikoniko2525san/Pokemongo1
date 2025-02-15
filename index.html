@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>リアルタイム通知</title>
+</head>
+<body>
+  <h1>ポケモンGO Plus通知システム</h1>
+  <button id="subscribeButton">通知を有効にする</button>
+
+  <script>
+    // サービスワーカーの登録
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(function(registration) {
+          console.log('Service Worker Registered');
+        })
+        .catch(function(error) {
+          console.error('Service Worker Registration failed:', error);
+        });
+    }
+
+    // 通知の許可をリクエスト
+    document.getElementById('subscribeButton').addEventListener('click', () => {
+      if ('Notification' in window && navigator.serviceWorker) {
+        Notification.requestPermission().then(function(permission) {
+          if (permission === 'granted') {
+            navigator.serviceWorker.ready.then(function(registration) {
+              registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: '<YOUR_PUBLIC_KEY>'
+              })
+              .then(function(subscription) {
+                console.log('User is subscribed:', subscription);
+                // サーバーに購読情報を送信する（後述）
+              })
+              .catch(function(error) {
+                console.error('Push subscription failed:', error);
+              });
+            });
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
